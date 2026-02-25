@@ -1,3 +1,4 @@
+
 # DaemonDoc  
 **A modern full‑stack documentation platform powered by React, Vite, Tailwind CSS, and Express.**  
 
@@ -221,7 +222,20 @@ curl http://localhost:3000/health
 ## Development
 
 ### Code style & linting
-```bash
+bash
+# Lint the server code
+npm run lint:server
+# Lint the client code
+npm run lint:client
+# Fix linting issues automatically (where possible)
+npm run lint:fix
+
+
+### Schema changes
+- The `sectionHashes` field in `ActiveRepo` is now stored as a plain object using Mongoose `Schema.Types.Mixed`.
+- When updating hashes, the model explicitly calls `doc.markModified('sectionHashes')` to ensure changes are persisted.
+
+---
 # Run ESLint on the client
 cd client
 npm run lint
@@ -291,8 +305,9 @@ For a full OpenAPI (Swagger) spec, see `server/openapi.yaml` (to be added). Belo
 
 **Rate limits** – The server respects GitHub’s `X-RateLimit-Remaining` header; if exhausted, a `429 Too Many Requests` response is returned with a `retry-after` field.
 
----
+**Patch‑mode support** – The server now stores per‑section hashes in the `ActiveRepo` document (`sectionHashes` field) as a plain object (MongoDB `Mixed` type). This enables efficient README patch generation. The field is automatically marked as modified when hashes are updated, ensuring proper persistence.
 
+---
 ## Contributing
 
 1. **Fork** the repository.  
