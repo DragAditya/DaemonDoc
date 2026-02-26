@@ -42,7 +42,7 @@ const AuthNavigation = () => {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer group w-40 sm:w-60 overflow-hidden"
           onClick={() => navigate("/")}
         >
           <motion.div
@@ -50,7 +50,7 @@ const AuthNavigation = () => {
             <img
               src="/DaemonLogo.png"
               alt="DaemonDoc Logo"
-              className="w-40 sm:w-48 pt-1"
+              className="w-40 sm:w-48 pt-1 sm:ml-2 scale-120"
             />
           </motion.div>
         </motion.div>
