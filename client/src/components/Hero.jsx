@@ -112,7 +112,7 @@ const Hero = () => {
 
   return (
     <main
-      className="relative pt-50 pb-20 lg:pt-50 lg:pb-24 overflow-hidden"
+      className="relative pt-36 pb-20 lg:pt-50 lg:pb-24 overflow-hidden"
       id="hero"
     >
       <div className="absolute inset-0 hero-gradient z-0 pointer-events-none" />

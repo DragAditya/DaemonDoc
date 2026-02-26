@@ -15,7 +15,7 @@ const LandingNavigation = () => {
 
   return (
     <nav className="fixed w-full z-50 bg-white/80 glass-effect border-b border-slate-100 transition-all duration-300">
-      <div className="max-w-[1400px] mx-auto pr-4 lg:pr-22 lg:pl-6">
+      <div className="max-w-[1400px] sm:mx-auto  px-4 sm:px-0 lg:pr-22 lg:pl-6">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 justify-center">
