@@ -1,3 +1,4 @@
+
 # 📚 DaemonDoc - AI-Powered README Generator
 
 <div align="center">
@@ -33,46 +34,24 @@
 
 ### Core Capabilities
 
-- **🤖 AI-Powered Analysis**
+- **🤖 Intelligent Code Analysis**
+  - Powered by the latest LLaMA 3.3 70B model for deep code understanding
+  - Generates human‑quality documentation from repository structure, logic, and intent
+- **🔔 Real‑time Webhook Integration**
+  - "Push once, sync forever" – listens to GitHub events and updates the README instantly
+- **🛡️ Enterprise‑Grade Security**
+  - AES‑256 encryption at rest and in transit for all GitHub tokens and repository keys
 
-  - Uses Groq's LLaMA 3.3 70B model for intelligent code understanding
-  - Uses Groq's openai/gpt-oss-120b for Readme Generation
-  - Analyzes repository structure, dependencies, and file relationships
-  - Generates contextual documentation based on actual implementation
+### Social Proof
 
-- **🔄 Automatic Updates**
+- Trusted by developers at **ACME Corp**, **Nebula**, **FlashDev**, **Stacker**, **Polymer** (and many more)
 
-  - GitHub webhook integration for real-time updates
-  - Regenerates README on every push event
-  - Smart diff analysis to focus on changed files
+### Additional Highlights
 
-- **📊 Intelligent Context Building**
-
-  - Identifies and prioritizes important files
-  - Extracts metadata from package managers (npm, pip, maven, etc.)
-  - Builds optimal prompts with code snippets and structure
-
-- **🎯 Repository Management**
-
-  - Select specific repositories to activate
-  - Dashboard to manage all your projects
-  - One-click activation/deactivation
-
-- **🔒 Enterprise-Grade Security**
-
-  - GitHub OAuth 2.0 authentication
-  - AES-256-GCM token encryption
-  - HMAC-SHA256 webhook signature verification
-  - JWT-based session management
-
-- **⚡ High Performance**
-  - BullMQ-powered background job processing
-  - Redis queue for async operations
-  - Optimized context building (70% size reduction)
-  - Handles large repositories efficiently
-
----
-
+- Automatic updates via GitHub webhooks with smart diff analysis
+- BullMQ + Redis powered background processing for high‑performance, scalable operations
+- Dashboard for per‑repository activation, de‑activation, and management
+- Secure OAuth 2.0 login, JWT‑based sessions, and HMAC‑SHA256 webhook verification
 ## 🎬 Demo
 
 ### Live Application
