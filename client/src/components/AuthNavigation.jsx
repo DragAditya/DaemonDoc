@@ -37,7 +37,7 @@ const AuthNavigation = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xs bg-linear-to-t from-white/10 via-white/50 to-white/95">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-8xl mx-auto pr-4  sm:pr-20 sm:pl-10 h-16 flex items-center justify-between">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -46,8 +46,6 @@ const AuthNavigation = () => {
           onClick={() => navigate("/")}
         >
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
           >
             <img
               src="/DaemonLogo.png"
