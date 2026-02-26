@@ -139,7 +139,10 @@ const Hero = () => {
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Where your code turns into{" "}
-            <span className="text-primary ">documentation</span> with a click
+            <span className="inline-block text-primary font-extrabold ml-5 transform-[perspective(800px)_rotateY(15deg)_rotateX(5deg)] bg-blue-50/50 px-2 rounded-lg border border-blue-100 shadow-sm ">
+              documentation
+            </span>
+            with a click
           </h1>
 
           <p className="text-xl md:text-2xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
@@ -152,7 +155,7 @@ const Hero = () => {
               onClick={() => {
                 location.href = "/login";
               }}
-              className="group bg-primary cursor-pointer text-white px-8 py-3.5 rounded-full font-medium flex items-center gap-3 hover:scale-98 transition-transform shadow-xl"
+              className="group bg-primary cursor-pointer text-white px-8 py-3.5 rounded-full font-medium flex items-center gap-3 hover:bg-primary/90 transition-colors ease-in-out duration-200 shadow-xl"
             >
               <span>Try Now</span>
               <span className="bg-white text-slate-900  rounded-full p-1">

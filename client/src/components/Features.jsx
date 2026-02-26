@@ -60,7 +60,7 @@ const CORE_FEATURES = [
 const CoreCapabilities = () => (
   <section
     id="features"
-    className="pt-32 pb-20 lg:pt-40 lg:pb-28 relative overflow-hidden bg-linear-to-b from-white via-slate-50/50 to-white"
+    className="pt-22 pb-20 lg:pt-12 lg:pb-28 relative overflow-hidden bg-linear-to-b from-white via-slate-50/50 to-white"
   >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-20">
