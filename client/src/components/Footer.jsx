@@ -8,14 +8,18 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-white pt-24 pb-12 border-t border-slate-100">
+    <footer className="relative bg-linear-to-b from-white via-slate-50/50 to-white pt-24 pb-12 border-t border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 pb-16">
           {/* Brand column */}
           <div className="md:col-span-4 flex flex-col gap-6">
             <div className="flex items-center gap-2">
-              <img src="/DaemonLogo.png" alt="DaemonDoc" className="w-60 self-center pt-2" />
+              <img
+                src="/DaemonLogo.png"
+                alt="DaemonDoc"
+                className="w-60 self-center pt-2"
+              />
             </div>
             <p className="text-slate-600 leading-relaxed font-light max-w-xs text-sm">
               The automation layer for your codebase documentation.
@@ -33,7 +37,7 @@ const Footer = () => {
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-slate-600 hover:text-[#1d4ed8] transition-colors text-sm"
+                      className="text-slate-600 hover:text-primary transition-colors text-sm"
                     >
                       {link}
                     </a>
@@ -50,7 +54,7 @@ const Footer = () => {
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-slate-600 hover:text-[#1d4ed8] transition-colors text-sm"
+                      className="text-slate-600 hover:text-primary transition-colors text-sm"
                     >
                       {link}
                     </a>
@@ -67,7 +71,7 @@ const Footer = () => {
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-slate-600 hover:text-[#1d4ed8] transition-colors text-sm"
+                      className="text-slate-600 hover:text-primary transition-colors text-sm"
                     >
                       {link}
                     </a>
@@ -89,9 +93,9 @@ const Footer = () => {
               <input
                 type="email"
                 placeholder="Email address"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#1d4ed8]/20 focus:border-[#1d4ed8] outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-slate-400"
               />
-              <button className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 text-sm">
+              <button className="w-full bg-primary hover:bg-[#1e40af] text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 text-sm">
                 Join
               </button>
             </div>
@@ -105,10 +109,16 @@ const Footer = () => {
               © {currentYear} DaemonDoc Inc.
             </span>
             <div className="flex gap-6">
-              <a href="#" className="text-slate-500 hover:text-[#1d4ed8] transition-colors text-sm">
+              <a
+                href="#"
+                className="text-slate-500 hover:text-[#1d4ed8] transition-colors text-sm"
+              >
                 Privacy
               </a>
-              <a href="#" className="text-slate-500 hover:text-[#1d4ed8] transition-colors text-sm">
+              <a
+                href="#"
+                className="text-slate-500 hover:text-[#1d4ed8] transition-colors text-sm"
+              >
                 Terms
               </a>
             </div>

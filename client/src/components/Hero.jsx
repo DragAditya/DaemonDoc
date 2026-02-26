@@ -112,7 +112,7 @@ const Hero = () => {
 
   return (
     <main
-      className="relative pt-50 pb-16 lg:pt-50 lg:pb-0 overflow-hidden"
+      className="relative pt-50 pb-20 lg:pt-50 lg:pb-24 overflow-hidden"
       id="hero"
     >
       <div className="absolute inset-0 hero-gradient z-0 pointer-events-none" />
@@ -125,14 +125,10 @@ const Hero = () => {
             className={`hidden lg:block absolute ${icon.pos} ${icon.anim}`}
           >
             <div
-              className={`bg-white/60 backdrop-blur-md border border-white/70 p-3 rounded-2xl shadow-lg shadow-slate-200/40 ${icon.rotate}`}
+              className={`w-8 h-8 rounded-md flex items-center justify-center shadow-lg shadow-slate-200/40 ${icon.rotate}`}
+              style={{ background: icon.bg }}
             >
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: icon.bg }}
-              >
-                <img src={icon.logo} alt={icon.id} className="w-5 h-5" />
-              </div>
+              <img src={icon.logo} alt={icon.id} className="w-8 h-8" />
             </div>
           </div>
         ))}
@@ -143,7 +139,7 @@ const Hero = () => {
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Where your code turns into{" "}
-            <span className="text-[#1d4ed8]">documentation</span> with a click
+            <span className="text-primary">documentation</span> with a click
           </h1>
 
           <p className="text-xl md:text-2xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
@@ -156,7 +152,7 @@ const Hero = () => {
               onClick={() => {
                 location.href = "/login";
               }}
-              className="group bg-[#1d4ed8] cursor-pointer text-white px-8 py-3.5 rounded-full font-medium flex items-center gap-3 hover:scale-98 transition-transform shadow-xl"
+              className="group bg-primary cursor-pointer text-white px-8 py-3.5 rounded-full font-medium flex items-center gap-3 hover:scale-98 transition-transform shadow-xl"
             >
               <span>Try Now</span>
               <span className="bg-white text-slate-900  rounded-full p-1">
@@ -166,7 +162,7 @@ const Hero = () => {
 
             <a
               href="#features"
-              className="text-slate-600 font-medium hover:text-[#1d4ed8] transition-colors flex items-center gap-1"
+              className="text-slate-600 font-medium hover:text-primary transition-colors flex items-center gap-1"
             >
               View Capabilities
               <ArrowRight size={16} />
@@ -178,7 +174,7 @@ const Hero = () => {
         <div className="max-w-4xl mx-auto mt-16 mb-8 px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center relative">
             {/* Connecting line (desktop only) */}
-            <div className="hidden md:block absolute top-[38px] left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent z-0" />
+            <div className="hidden md:block absolute top-[38px] left-0 w-full h-px bg-linear-to-r from-transparent via-slate-200 to-transparent z-0" />
 
             {STEPS.map((step, i) => (
               <div
@@ -202,7 +198,7 @@ const Hero = () => {
         {/* README Preview Card */}
         <div className="mt-12 relative mx-auto max-w-5xl">
           {/* Gradient glow */}
-          <div className="absolute top-0 left-0 right-0 -inset-1 bg-gradient-to-r from-blue-500 to-sky-500 rounded-2xl blur opacity-20 animate-pulse-slow" />
+          <div className="absolute top-0 left-0 right-0 -inset-1 bg-linear-to-r from-blue-500 to-sky-500 rounded-2xl blur opacity-20 animate-pulse-slow" />
 
           {/* Browser card */}
           <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
@@ -215,7 +211,7 @@ const Hero = () => {
               </div>
               <div className="flex-1 bg-white rounded-md py-1 pr-20 text-xs text-slate-400 flex items-center justify-center gap-1 font-mono">
                 <Lock size={10} className="shrink-0" />
-                daemondoc.io/repo/readme-preview
+                daemondoc.online
               </div>
             </div>
 
@@ -243,7 +239,9 @@ const Hero = () => {
               />
 
               {/* Play/pause icon overlay */}
-              <div className={`absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity duration-300 pointer-events-none z-20 ${isPlaying ? "opacity-0" : "opacity-100"}`}>
+              <div
+                className={`absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity duration-300 pointer-events-none z-20 ${isPlaying ? "opacity-0" : "opacity-100"}`}
+              >
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/20">
                   <Play
                     size={28}
@@ -256,6 +254,9 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      {/* Blend gradient at the bottom */}
+      <div className="absolute bottom-0 left-0 right-0 w-full h-40 bg-linear-to-t from-white to-transparent pointer-events-none z-0" />
     </main>
   );
 };

@@ -46,18 +46,15 @@ const AuthNavigation = () => {
           onClick={() => navigate("/")}
         >
           <motion.div
-            whileHover={{ rotate: 5, scale: 1.05 }}
+            whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
           >
             <img
-              src="/logo.svg"
+              src="/DaemonLogo.png"
               alt="DaemonDoc Logo"
-              className="w-8 h-8 sm:w-9 sm:h-9"
+              className="w-40 sm:w-48 pt-1"
             />
           </motion.div>
-          <span className="font-semibold text-base sm:text-lg tracking-tight text-slate-900">
-            DaemonDoc
-          </span>
         </motion.div>
 
         {/* Navigation & User Menu */}

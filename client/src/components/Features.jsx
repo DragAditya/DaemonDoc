@@ -1,5 +1,22 @@
 import React from "react";
-import { Brain, Webhook, ShieldCheck, Key, Share2, GitCompare, Layers, GitBranch, Filter, Code2, Cloud, Zap, Boxes, Hexagon, Check, Building2 } from "lucide-react";
+import {
+  Brain,
+  Webhook,
+  ShieldCheck,
+  Key,
+  Share2,
+  GitCompare,
+  Layers,
+  GitBranch,
+  Filter,
+  Code2,
+  Cloud,
+  Zap,
+  Boxes,
+  Hexagon,
+  Check,
+  Building2,
+} from "lucide-react";
 
 /* ─────────────────────────────────────────
    SECTION 1 — Core Capabilities (3 cards)
@@ -8,21 +25,33 @@ const CORE_FEATURES = [
   {
     icon: Brain,
     title: "Intelligent Code Analysis",
-    desc: ["Powered by the latest ", "LLaMA 3.3 70B", " integration, our engine deeply understands your codebase structure, logic, and intent to generate human-quality documentation."],
+    desc: [
+      "Powered by the latest ",
+      "LLaMA 3.3 70B",
+      " integration, our engine deeply understands your codebase structure, logic, and intent to generate human-quality documentation.",
+    ],
     iconClass: "text-blue-600",
     gradientClass: "feature-gradient-1",
   },
   {
     icon: Webhook,
     title: "Real-time Webhook Integration",
-    desc: ["The ", "push once, sync forever", " promise. We listen for git events in real-time, ensuring your README is never out of date with your actual code."],
+    desc: [
+      "The ",
+      "push once, sync forever",
+      " promise. We listen for git events in real-time, ensuring your README is never out of date with your actual code.",
+    ],
     iconClass: "bg-sky-50 text-sky-600",
     gradientClass: "feature-gradient-2",
   },
   {
     icon: ShieldCheck,
     title: "Enterprise-Grade Security",
-    desc: ["Your code stays yours. All GitHub tokens and repository access keys are protected with bank-level ", "AES-256 encryption", " at rest and in transit."],
+    desc: [
+      "Your code stays yours. All GitHub tokens and repository access keys are protected with bank-level ",
+      "AES-256 encryption",
+      " at rest and in transit.",
+    ],
     iconClass: " text-emerald-600",
     gradientClass: "feature-gradient-3",
   },
@@ -31,7 +60,7 @@ const CORE_FEATURES = [
 const CoreCapabilities = () => (
   <section
     id="features"
-    className="py-20 lg:py-28 relative overflow-hidden bg-gradient-to-b from-slate-50 to-white"
+    className="pt-32 pb-20 lg:pt-40 lg:pb-28 relative overflow-hidden bg-linear-to-b from-white via-slate-50/50 to-white"
   >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-20">
@@ -42,7 +71,8 @@ const CoreCapabilities = () => (
           Core Capabilities
         </h2>
         <p className="text-lg text-slate-600 font-light">
-          Everything you need to maintain perfect documentation without lifting a finger.
+          Everything you need to maintain perfect documentation without lifting
+          a finger.
         </p>
       </div>
 
@@ -87,7 +117,7 @@ const COMPANIES = [
 ];
 
 const SocialProof = () => (
-  <section className="py-12 border-t border-slate-100 bg-white">
+  <section className="py-12  bg-linear-to-b from-white via-slate-50/50 to-white">
     <div className="max-w-7xl mx-auto px-4 text-center">
       <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-8">
         Trusted by developers at
@@ -151,7 +181,10 @@ const ENGINE_FEATURES = [
 ];
 
 const EngineSection = () => (
-  <section id="engine" className="py-20 lg:py-28 bg-white">
+  <section
+    id="engine"
+    className="py-20 lg:py-28 bg-linear-to-b from-white via-slate-50/50 to-white"
+  >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h2
@@ -161,7 +194,8 @@ const EngineSection = () => (
           Everything the Engine Does
         </h2>
         <p className="text-lg text-slate-600 font-light">
-          Deep-tech capabilities powering the next generation of automated documentation.
+          Deep-tech capabilities powering the next generation of automated
+          documentation.
         </p>
       </div>
 
@@ -205,7 +239,10 @@ const ENTERPRISE_FEATURES = [
 ];
 
 const Pricing = () => (
-  <section id="pricing" className="py-20 lg:py-28 bg-gradient-to-b from-slate-50 to-white">
+  <section
+    id="pricing"
+    className="py-20 lg:py-28 bg-linear-to-b from-white via-slate-50/50 to-white"
+  >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h2
@@ -243,7 +280,10 @@ const Pricing = () => (
           </div>
           <ul className="space-y-3 mb-8 flex-1">
             {PRO_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
+              <li
+                key={f}
+                className="flex items-center gap-2.5 text-sm text-slate-600"
+              >
                 <Check size={14} className="text-[#1d4ed8] shrink-0" />
                 {f}
               </li>
@@ -262,16 +302,27 @@ const Pricing = () => (
           <span className="absolute top-6 right-6 text-xs font-medium px-2.5 py-1 rounded-full bg-white/10 text-slate-400">
             Coming Soon
           </span>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Enterprise</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+            Enterprise
+          </p>
           <div className="mb-2">
-            <span className="text-4xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Custom</span>
+            <span
+              className="text-4xl font-bold text-white"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Custom
+            </span>
           </div>
           <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-            For organizations requiring custom SLAs, compliance, and dedicated support.
+            For organizations requiring custom SLAs, compliance, and dedicated
+            support.
           </p>
           <ul className="space-y-3 mb-8 flex-1">
             {ENTERPRISE_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-slate-400">
+              <li
+                key={f}
+                className="flex items-center gap-2.5 text-sm text-slate-400"
+              >
                 <Check size={14} className="text-slate-500 shrink-0" />
                 {f}
               </li>
