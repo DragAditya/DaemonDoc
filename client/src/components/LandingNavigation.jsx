@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 const NAV_LINKS = [
   { label: "Solutions", href: "#features" },
-  { label: "Product", href: "#engine" },
   { label: "Pricing", href: "#pricing" },
+  { label: "Product", href: "#engine" },
+
 ];
 
 const LandingNavigation = () => {
