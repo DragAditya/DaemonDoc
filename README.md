@@ -26,6 +26,7 @@
 - **🎨 Professional**: Generates well-structured, comprehensive docs
 - **🔐 Secure**: OAuth authentication with encrypted token storage
 - **⚡ Fast**: Background processing with Redis-powered job queues
+- **📱 Responsive UI**: Navigation bar padding and hero section spacing have been fine‑tuned for better responsiveness across devices.
 
 ---
 
@@ -86,7 +87,7 @@ _(Add screenshots of your landing page, dashboard, and repository selection UI h
 
 ## 🏗️ Architecture
 
-```
+
                         ┌──────────────────┐
                         │   React Client   │
                         │   (Vite + TW)    │
@@ -119,7 +120,7 @@ _(Add screenshots of your landing page, dashboard, and repository selection UI h
                                       │   Groq AI API    │
                                       │  (LLaMA 3.3 70B) │
                                       └──────────────────┘
-```
+
 
 ### Data Flow
 
@@ -132,6 +133,12 @@ _(Add screenshots of your landing page, dashboard, and repository selection UI h
    - Generate README using Groq AI
    - Commit README back to repository
    - Update job status
+
+### UI Updates
+
+Recent UI refinements include:
+- Adjusted navigation bar padding for improved responsiveness on mobile and desktop.
+- Reduced top padding in the hero section to create a tighter, more engaging first‑view experience.
 
 ---
 
