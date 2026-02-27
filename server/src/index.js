@@ -33,7 +33,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Global error handler — must be defined after all routes
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.message);
   res.status(500).json({ message: "Internal server error" });

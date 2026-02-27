@@ -30,7 +30,6 @@ export function parseReadmeSections(readmeContent) {
     }
   }
 
-  // Save the final section
   sections[currentKey] = currentLines.join("\n");
   orderedKeys.push(currentKey);
 

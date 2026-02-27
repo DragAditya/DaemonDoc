@@ -72,12 +72,10 @@ export async function getCommit(accessToken, owner, repo, sha) {
  */
 export async function getRepoTree(accessToken, owner, repo, branch) {
   try {
-    // First get the branch to get the tree SHA
     const branchUrl = `${GITHUB_API_BASE}/repos/${owner}/${repo}/branches/${branch}`;
     const branchResponse = await githubGet(branchUrl, accessToken);
     const treeSha = branchResponse.data.commit.commit.tree.sha;
 
-    // Get the tree recursively
     const treeUrl = `${GITHUB_API_BASE}/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`;
     const treeResponse = await githubGet(treeUrl, accessToken);
 
@@ -106,7 +104,6 @@ export async function getFileContent(accessToken, owner, repo, path, branch) {
     const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
     const response = await githubGet(url, accessToken);
 
-    // Decode base64 content
     const content = Buffer.from(response.data.content, "base64").toString(
       "utf-8",
     );
@@ -152,7 +149,6 @@ export async function commitFile(
   try {
     const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`;
 
-    // Encode content to base64
     const encodedContent = Buffer.from(content).toString("base64");
 
     const payload = {
@@ -161,7 +157,6 @@ export async function commitFile(
       branch: branch,
     };
 
-    // Include SHA if updating existing file
     if (sha) {
       payload.sha = sha;
     }
@@ -188,7 +183,6 @@ export async function commitFile(
  * @returns {string} Formatted tree structure
  */
 export function formatRepoTree(tree, maxDepth = 3) {
-  // Filter out common directories to ignore
   const ignorePatterns = [
     /^node_modules\//,
     /^\.git\//,
@@ -206,7 +200,6 @@ export function formatRepoTree(tree, maxDepth = 3) {
     return !ignorePatterns.some((pattern) => pattern.test(item.path));
   });
 
-  // Build tree structure
   const structure = {};
 
   filteredTree.forEach((item) => {
@@ -227,7 +220,6 @@ export function formatRepoTree(tree, maxDepth = 3) {
     });
   });
 
-  // Format structure as string
   function formatNode(node, prefix = "", isLast = true) {
     let result = "";
     const entries = Object.entries(node);

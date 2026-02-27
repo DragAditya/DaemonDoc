@@ -29,7 +29,6 @@ export function buildReadmeContext({
     fullCodebase: fullCodebase || [],
   };
 
-  // Build commit diff summary
   if (commitData) {
     context.commitDiff = formatCommitDiff(commitData);
   }
@@ -52,7 +51,6 @@ function formatCommitDiff(commitData) {
   if (commitData.files && commitData.files.length > 0) {
     diff += `Files Changed: ${commitData.files.length}\n\n`;
 
-    // Group files by status
     const added = commitData.files.filter((f) => f.status === "added");
     const modified = commitData.files.filter((f) => f.status === "modified");
     const removed = commitData.files.filter((f) => f.status === "removed");
@@ -90,7 +88,6 @@ function formatCommitDiff(commitData) {
       diff += "\n";
     }
 
-    // Add stats
     if (commitData.stats) {
       diff += `Total Changes: +${commitData.stats.additions} -${commitData.stats.deletions}\n`;
     }
@@ -106,7 +103,6 @@ function formatCommitDiff(commitData) {
  * @returns {Object} Optimized context
  */
 export function optimizeContext(context, maxTokens = 8000) {
-  // Rough estimation: 4 characters per token
   const maxChars = maxTokens * 4;
 
   if (estimateContextSize(context) <= maxChars) {
@@ -116,9 +112,7 @@ export function optimizeContext(context, maxTokens = 8000) {
   const optimized = { ...context };
   const fits = () => estimateContextSize(optimized) <= maxChars;
 
-  // Priority order: fullCodebase → changedFiles → repoStructure → existingReadme → commitDiff
 
-  // Step 1: Truncate full codebase
   if (optimized.fullCodebase && optimized.fullCodebase.length > 0) {
     optimized.fullCodebase = optimized.fullCodebase.map((file) => ({
       ...file,
@@ -138,7 +132,6 @@ export function optimizeContext(context, maxTokens = 8000) {
     if (fits()) return optimized;
   }
 
-  // Step 2: Truncate changed files
   if (optimized.changedFiles && optimized.changedFiles.length > 0) {
     optimized.changedFiles = optimized.changedFiles.map((file) => ({
       ...file,
@@ -147,19 +140,16 @@ export function optimizeContext(context, maxTokens = 8000) {
     if (fits()) return optimized;
   }
 
-  // Step 3: Truncate repo structure
   if (optimized.repoStructure) {
     optimized.repoStructure = truncateText(optimized.repoStructure, 100);
     if (fits()) return optimized;
   }
 
-  // Step 4: Truncate existing README
   if (optimized.existingReadme) {
     optimized.existingReadme = truncateText(optimized.existingReadme, 100);
     if (fits()) return optimized;
   }
 
-  // Step 5: Truncate commit diff
   if (optimized.commitDiff) {
     optimized.commitDiff = truncateText(optimized.commitDiff, 50);
   }
@@ -206,7 +196,6 @@ export function validateContext(context) {
   const errors = [];
   const warnings = [];
 
-  // Required fields
   if (!context.repoName) {
     errors.push("repoName is required");
   }
@@ -215,12 +204,10 @@ export function validateContext(context) {
     errors.push("repoOwner is required");
   }
 
-  // Optional but recommended fields
   if (!context.repoStructure) {
     warnings.push("repoStructure is missing - README may lack context");
   }
 
-  // Check if we have enough context
   const hasFullCodebase =
     context.fullCodebase && context.fullCodebase.length > 0;
   const hasChangedFiles =
@@ -239,7 +226,6 @@ export function validateContext(context) {
     );
   }
 
-  // Check context size
   const size = estimateContextSize(context);
   const estimatedTokens = Math.ceil(size / 4);
 
@@ -275,7 +261,6 @@ export function createMinimalContext(repoName, repoOwner) {
   };
 }
 
-// ─── Patch-mode prompt builders ──────────────────────────────────────────────
 
 /**
  * Build the user prompt for LLaMA 70B impact-mapping (Step 1 of patch mode).

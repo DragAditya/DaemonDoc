@@ -132,7 +132,6 @@ export const deleteAccount = async (req, res) => {
     const accessToken = decrypt(user.githubAccessToken);
     const activeRepos = await ActiveRepo.find({ userId });
 
-    // Delete webhooks - ignore 404 errors as the webhook may already be deleted
     for (const repo of activeRepos) {
       try {
         await githubDelete(
@@ -140,7 +139,6 @@ export const deleteAccount = async (req, res) => {
           accessToken,
         );
       } catch (webhookError) {
-        // Ignore 404 errors - webhook may have already been deleted
         if (webhookError.response?.status !== 404) {
           console.warn(
             `Failed to delete webhook for ${repo.repoName}:`,

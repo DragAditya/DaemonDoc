@@ -43,7 +43,6 @@ export function validatePatches({
   const patchKeys = Object.keys(patches);
   const originalKeys = new Set(Object.keys(originalSections));
 
-  // Forbidden section in patches
   for (const key of patchKeys) {
     if (FORBIDDEN_SECTIONS.includes(key)) {
       return {
@@ -54,7 +53,6 @@ export function validatePatches({
     }
   }
 
-  // Model invented a section key that did not exist
   for (const key of patchKeys) {
     if (!originalKeys.has(key)) {
       return {
@@ -65,7 +63,6 @@ export function validatePatches({
     }
   }
 
-  // Hallucination phrases in patch content
   for (const key of patchKeys) {
     const content = patches[key];
     if (typeof content === "string") {

@@ -1,5 +1,3 @@
-// Merged language map — union of groq.service.js and github.service.js maps.
-// Keeps more specific values (e.g. "jsx" over "javascript" for .jsx files).
 export const LANG_MAP = {
   js: "javascript",
   jsx: "jsx",

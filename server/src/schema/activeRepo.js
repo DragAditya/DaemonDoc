@@ -16,12 +16,10 @@ const activeRepoSchema = new Schema(
     webhookId: { type: Number, required: true },
     lastUpdated: { type: Date, default: Date.now },
 
-    // README generation tracking
     lastReadmeGeneratedAt: { type: Date, default: null },
     readmeGenerationCount: { type: Number, default: 0 },
     lastReadmeSha: { type: String, default: null },
 
-    // Section-level hashes for patch mode (plain object — Mixed avoids Map cast errors)
     sectionHashes: { type: Schema.Types.Mixed, default: {} },
     lastSectionHashesUpdatedAt: { type: Date, default: null },
   },

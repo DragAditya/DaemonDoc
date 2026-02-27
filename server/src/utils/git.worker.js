@@ -9,6 +9,7 @@ import {
   generateReadmePatch,
   determineGenerationMode,
 } from "../services/groq.service.js";
+import { getActiveLimits } from "../services/gemini.service.js";
 import { parseReadmeSections, hashSections } from "./readme.parser.js";
 import {
   getCommit,
@@ -35,10 +36,9 @@ export const connection = new IORedis({
   maxRetriesPerRequest: null,
   enableReadyCheck: true,
   enableOfflineQueue: true,
-  keepAlive: 30000, // Send keepalive packets every 30s
+  keepAlive: 30000,
   retryStrategy: (times) => {
-    // Retry indefinitely for production stability
-    const delay = Math.min(times * 1000, 10000); // Max 10s delay
+    const delay = Math.min(times * 1000, 10000);
     console.log(`Retrying Redis connection in ${delay}ms (attempt ${times})`);
     return delay;
   },
@@ -46,7 +46,7 @@ export const connection = new IORedis({
     const targetErrors = ["READONLY", "ECONNRESET", "ETIMEDOUT"];
     if (targetErrors.some((e) => err.message.includes(e))) {
       console.log("Reconnecting due to:", err.message);
-      return true; // Reconnect on these errors
+      return true;
     }
     return false;
   },
@@ -54,42 +54,19 @@ export const connection = new IORedis({
   lazyConnect: true,
 });
 
-connection.on("error", (err) => {
-  console.error("Redis connection error:", err.message);
-  // Don't crash the server, just log the error
-});
+connection.on("error", (err) => console.error("Redis connection error:", err.message));
+connection.on("connect", () => console.log("Redis connected successfully"));
+connection.on("ready", () => console.log("Redis ready to accept commands"));
+connection.on("close", () => console.warn("Redis connection closed. Will attempt to reconnect..."));
+connection.on("reconnecting", (timeToReconnect) => console.log(`Reconnecting to Redis in ${timeToReconnect}ms...`));
+connection.on("end", () => console.error("Redis connection ended permanently"));
 
-connection.on("connect", () => {
-  console.log("Redis connected successfully");
-});
-
-connection.on("ready", () => {
-  console.log("Redis ready to accept commands");
-});
-
-connection.on("close", () => {
-  console.warn("Redis connection closed. Will attempt to reconnect...");
-});
-
-connection.on("reconnecting", (timeToReconnect) => {
-  console.log(`Reconnecting to Redis in ${timeToReconnect}ms...`);
-});
-
-connection.on("end", () => {
-  console.error("Redis connection ended permanently");
-});
-
-// Attempt to connect
 connection.connect().catch((err) => {
   console.error("Failed to connect to Redis:", err.message);
-  console.log(
-    "Redis is optional. Server will continue without queue functionality.",
-  );
+  console.log("Redis is optional. Server will continue without queue functionality.");
 });
 
-export const readmeQueue = new Queue("readme-generation", {
-  connection,
-});
+export const readmeQueue = new Queue("readme-generation", { connection });
 
 new Worker(
   "readme-generation",
@@ -113,14 +90,7 @@ new Worker(
   },
 );
 
-/**
- * Update a UserLog document in place.
- * Silently swallows errors so a log failure never kills the job.
- * @param {string} logId
- * @param {string} action
- * @param {string} status - "ongoing" | "success" | "failed"
- * @param {string|null} commitId
- */
+// Errors here are swallowed so a logging failure never kills a generation job
 async function updateLogStatus(logId, action, status, commitId = null) {
   try {
     const log = await UserLogModel.findById(logId);
@@ -135,27 +105,15 @@ async function updateLogStatus(logId, action, status, commitId = null) {
   }
 }
 
-/**
- * AI Handler - Processes README generation jobs
- * @param {Object} data - Job data from webhook
- */
 const aihandler = async (data) => {
-  const {
-    userId,
-    repoId,
-    repoName,
-    repoFullName,
-    repoOwner,
-    defaultBranch,
-    commitSha,
-  } = data;
+  const { userId, repoId, repoName, repoFullName, repoOwner, defaultBranch, commitSha } = data;
 
-  console.log(
-    `[AI Handler] Starting README generation for ${repoFullName} at commit ${commitSha}`,
-  );
+  // Resolve fetch limits up front — Gemini gets larger budgets than Groq
+  const limits = getActiveLimits();
+
+  console.log(`[AI Handler] Starting README generation for ${repoFullName} at commit ${commitSha}`);
 
   try {
-    // Step 1: Fetch user's GitHub token
     const user = await User.findById(userId);
     if (!user || !user.githubAccessToken) {
       throw new Error("GitHub access token not found for user");
@@ -163,165 +121,100 @@ const aihandler = async (data) => {
 
     const accessToken = decrypt(user.githubAccessToken);
 
-    // Step 2: Get active repo record
-    const activeRepo = await ActiveRepo.findOne({
-      userId,
-      repoId,
-      active: true,
-    });
-    if (!activeRepo) {
-      throw new Error("Active repository not found");
-    }
+    const activeRepo = await ActiveRepo.findOne({ userId, repoId, active: true });
+    if (!activeRepo) throw new Error("Active repository not found");
 
-    // Step 3: Fetch commit details
     console.log(`[AI Handler] Fetching commit details for ${commitSha}`);
-    const commitData = await getCommit(
-      accessToken,
-      repoOwner,
-      repoName,
-      commitSha,
-    );
+    const commitData = await getCommit(accessToken, repoOwner, repoName, commitSha);
 
-    // Step 4: Fetch repository structure
     console.log(`[AI Handler] Fetching repository structure`);
     let repoStructure = "";
     try {
-      const treeData = await getRepoTree(
-        accessToken,
-        repoOwner,
-        repoName,
-        defaultBranch,
-      );
+      const treeData = await getRepoTree(accessToken, repoOwner, repoName, defaultBranch);
       repoStructure = formatRepoTree(treeData.tree, 3);
     } catch (error) {
       console.warn(`[AI Handler] Could not fetch repo tree: ${error.message}`);
       repoStructure = "Repository structure not available";
     }
 
-    // Step 5: Fetch existing README
     console.log(`[AI Handler] Checking for existing README`);
     const readmeFileName = process.env.README_FILE_NAME || "README.md";
     let existingReadme = null;
     let existingReadmeSha = null;
 
     try {
-      const readmeData = await getFileContent(
-        accessToken,
-        repoOwner,
-        repoName,
-        readmeFileName,
-        defaultBranch,
-      );
-
+      const readmeData = await getFileContent(accessToken, repoOwner, repoName, readmeFileName, defaultBranch);
       if (readmeData) {
         existingReadme = readmeData.content;
         existingReadmeSha = readmeData.sha;
-        console.log(
-          `[AI Handler] Found existing README (${readmeData.size} bytes)`,
-        );
+        console.log(`[AI Handler] Found existing README (${readmeData.size} bytes)`);
       }
     } catch (error) {
-      console.log(
-        `[AI Handler] No existing README found or error fetching: ${error.message}`,
-      );
+      console.log(`[AI Handler] No existing README found or error fetching: ${error.message}`);
     }
 
     await updateLogStatus(data.logId, "GITHUB_REPO_CONNECTED", "ongoing");
 
-    // Step 6: Determine generation mode
     const { mode, reason } = determineGenerationMode(existingReadme);
     console.log(`[AI Handler] Generation mode: ${mode} — ${reason}`);
 
-    // Step 7: Branch on mode
     if (mode === "full") {
-      // ── Full generation path ───────────────────────────────────────────────
       console.log(`[AI Handler] FULL mode — scanning entire repository`);
 
       let fullCodebase = [];
       try {
         fullCodebase = await fetchFilesFromTree(
-          accessToken,
-          repoOwner,
-          repoName,
-          defaultBranch,
-          25,
+          accessToken, repoOwner, repoName, defaultBranch,
+          limits.maxFilesFullScan, limits.maxLinesPerFile,
         );
-        console.log(
-          `[AI Handler] Scanned ${fullCodebase.length} important files from repository`,
-        );
+        console.log(`[AI Handler] Scanned ${fullCodebase.length} important files from repository`);
       } catch (error) {
-        console.error(
-          `[AI Handler] Error scanning repository: ${error.message}`,
-        );
+        console.error(`[AI Handler] Error scanning repository: ${error.message}`);
       }
 
       const fullCodebasePathSet = new Set(fullCodebase.map((f) => f.path));
       const changedFilesContent = await fetchChangedFiles(
-        accessToken,
-        repoOwner,
-        repoName,
-        defaultBranch,
-        commitData.files,
-        10,
-        150,
-        fullCodebasePathSet,
+        accessToken, repoOwner, repoName, defaultBranch,
+        commitData.files, limits.maxChangedFiles, limits.maxChangedFileLines, fullCodebasePathSet,
       );
 
       let context = buildReadmeContext({
-        repoName,
-        repoOwner,
-        repoStructure,
-        existingReadme,
-        commitData,
-        changedFilesContent,
-        fullCodebase,
+        repoName, repoOwner, repoStructure, existingReadme,
+        commitData, changedFilesContent, fullCodebase,
       });
 
       const validation = validateContext(context);
       console.log(`[AI Handler] Context validation:`, validation);
 
-      if (!validation.valid) {
-        throw new Error(`Invalid context: ${validation.errors.join(", ")}`);
-      }
+      if (!validation.valid) throw new Error(`Invalid context: ${validation.errors.join(", ")}`);
 
       if (validation.warnings.length > 0) {
         console.warn(`[AI Handler] Context warnings:`, validation.warnings);
       }
 
-      if (validation.estimatedTokens > 8000) {
-        console.log(
-          `[AI Handler] Optimizing context (${validation.estimatedTokens} tokens)`,
-        );
-        context = optimizeContext(context, 8000);
+      if (validation.estimatedTokens > limits.contextOptimizeAt) {
+        console.log(`[AI Handler] Optimizing context (${validation.estimatedTokens} tokens > ${limits.contextOptimizeAt} limit)`);
+        context = optimizeContext(context, limits.contextOptimizeAt);
       }
 
-      console.log(`[AI Handler] Calling Groq API to generate README`);
+      console.log(`[AI Handler] Generating README (Gemini → Groq fallback)`);
       const generatedReadme = await generateReadme(context);
 
       if (!generatedReadme || generatedReadme.trim().length === 0) {
-        throw new Error("Groq API returned empty README");
+        throw new Error("AI returned empty README");
       }
 
-      console.log(
-        `[AI Handler] Generated README (${generatedReadme.length} characters)`,
-      );
+      console.log(`[AI Handler] Generated README (${generatedReadme.length} characters)`);
 
       const commitResult = await commitFile(
-        accessToken,
-        repoOwner,
-        repoName,
-        readmeFileName,
-        generatedReadme,
-        "chore: auto-update README [skip ci]",
-        defaultBranch,
-        existingReadmeSha,
+        accessToken, repoOwner, repoName, readmeFileName,
+        generatedReadme, "chore: auto-update README [skip ci]",
+        defaultBranch, existingReadmeSha,
       );
 
-      console.log(
-        `[AI Handler] README committed successfully: ${commitResult.commit.sha}`,
-      );
+      console.log(`[AI Handler] README committed successfully: ${commitResult.commit.sha}`);
 
-      // Seed section hashes so the next push uses patch mode
+      // Store section hashes so the next push can use patch mode instead of full regen
       const { sections: newSections } = parseReadmeSections(generatedReadme);
       const newHashes = hashSections(newSections);
 
@@ -329,201 +222,101 @@ const aihandler = async (data) => {
       activeRepo.markModified("sectionHashes");
       activeRepo.lastSectionHashesUpdatedAt = new Date();
       activeRepo.lastReadmeGeneratedAt = new Date();
-      activeRepo.readmeGenerationCount =
-        (activeRepo.readmeGenerationCount || 0) + 1;
+      activeRepo.readmeGenerationCount = (activeRepo.readmeGenerationCount || 0) + 1;
       activeRepo.lastReadmeSha = commitResult.commit.sha;
       await activeRepo.save();
 
-      await updateLogStatus(
-        data.logId,
-        "README_GENERATION_SUCCESS",
-        "success",
-        commitResult.commit.sha,
-      );
+      await updateLogStatus(data.logId, "README_GENERATION_SUCCESS", "success", commitResult.commit.sha);
 
-      console.log(
-        `[AI Handler] ✓ Full README generation completed for ${repoFullName}`,
-      );
-      return {
-        success: true,
-        commitSha: commitResult.commit.sha,
-        readmeLength: generatedReadme.length,
-      };
+      console.log(`[AI Handler] ✓ Full README generation completed for ${repoFullName}`);
+      return { success: true, commitSha: commitResult.commit.sha, readmeLength: generatedReadme.length };
+
     } else {
-      // ── Patch mode ─────────────────────────────────────────────────────────
       console.log(`[AI Handler] PATCH mode — surgical section update`);
 
-      const { sections: originalSections, orderedKeys } =
-        parseReadmeSections(existingReadme);
+      const { sections: originalSections, orderedKeys } = parseReadmeSections(existingReadme);
       const originalHashes = hashSections(originalSections);
 
       const changedFilesContent = await fetchChangedFiles(
-        accessToken,
-        repoOwner,
-        repoName,
-        defaultBranch,
-        commitData.files,
-        10,
-        100,
+        accessToken, repoOwner, repoName, defaultBranch,
+        commitData.files, limits.maxPatchFiles, limits.maxPatchFileLines,
       );
-      console.log(
-        `[AI Handler] Fetched ${changedFilesContent.length} changed files`,
-      );
+      console.log(`[AI Handler] Fetched ${changedFilesContent.length} changed files`);
 
-      // Build commitDiff for the patch prompt
       const { commitDiff } = buildReadmeContext({
-        repoName,
-        repoOwner,
-        repoStructure: "",
-        existingReadme: null,
-        commitData,
-        changedFilesContent: [],
+        repoName, repoOwner, repoStructure: "",
+        existingReadme: null, commitData, changedFilesContent: [],
       });
 
       const patchResult = await generateReadmePatch({
-        repoName,
-        repoOwner,
-        repoStructure,
-        commitDiff,
-        changedFiles: changedFilesContent,
-        originalSections,
-        orderedKeys,
-        originalHashes,
+        repoName, repoOwner, repoStructure, commitDiff,
+        changedFiles: changedFilesContent, originalSections, orderedKeys, originalHashes,
       });
 
       if (!patchResult) {
-        console.log(
-          `[AI Handler] Patch generation returned null — skipping commit`,
-        );
-        await updateLogStatus(
-          data.logId,
-          "README_GENERATION_FAILED",
-          "failed",
-        );
+        console.log(`[AI Handler] Patch generation returned null — skipping commit`);
+        await updateLogStatus(data.logId, "README_GENERATION_FAILED", "failed");
         return { skipped: true };
       }
 
       const { finalReadme, newHashes } = patchResult;
 
       const commitResult = await commitFile(
-        accessToken,
-        repoOwner,
-        repoName,
-        readmeFileName,
-        finalReadme,
-        "chore: auto-update README [skip ci]",
-        defaultBranch,
-        existingReadmeSha,
+        accessToken, repoOwner, repoName, readmeFileName,
+        finalReadme, "chore: auto-update README [skip ci]",
+        defaultBranch, existingReadmeSha,
       );
 
-      console.log(
-        `[AI Handler] README patch committed successfully: ${commitResult.commit.sha}`,
-      );
+      console.log(`[AI Handler] README patch committed successfully: ${commitResult.commit.sha}`);
 
       activeRepo.sectionHashes = newHashes;
       activeRepo.markModified("sectionHashes");
       activeRepo.lastSectionHashesUpdatedAt = new Date();
       activeRepo.lastReadmeGeneratedAt = new Date();
-      activeRepo.readmeGenerationCount =
-        (activeRepo.readmeGenerationCount || 0) + 1;
+      activeRepo.readmeGenerationCount = (activeRepo.readmeGenerationCount || 0) + 1;
       activeRepo.lastReadmeSha = commitResult.commit.sha;
       await activeRepo.save();
 
-      await updateLogStatus(
-        data.logId,
-        "README_GENERATION_SUCCESS",
-        "success",
-        commitResult.commit.sha,
-      );
+      await updateLogStatus(data.logId, "README_GENERATION_SUCCESS", "success", commitResult.commit.sha);
 
-      console.log(
-        `[AI Handler] ✓ Patch README generation completed for ${repoFullName}`,
-      );
-      return {
-        success: true,
-        commitSha: commitResult.commit.sha,
-        mode: "patch",
-      };
+      console.log(`[AI Handler] ✓ Patch README generation completed for ${repoFullName}`);
+      return { success: true, commitSha: commitResult.commit.sha, mode: "patch" };
     }
+
   } catch (error) {
-    console.error(
-      `[AI Handler] ✗ Error generating README for ${repoFullName}:`,
-      error.message,
-    );
+    console.error(`[AI Handler] ✗ Error generating README for ${repoFullName}:`, error.message);
     console.error(error.stack);
-
     await updateLogStatus(data.logId, "README_GENERATION_FAILED", "failed");
-
-    // Re-throw so BullMQ can retry
     throw error;
   }
 };
 
-/**
- * Fetch important files from the full repo tree
- * @param {string} accessToken
- * @param {string} owner
- * @param {string} repo
- * @param {string} branch
- * @param {number} limit - max files to fetch
- * @returns {Promise<Array>}
- */
-async function fetchFilesFromTree(
-  accessToken,
-  owner,
-  repo,
-  branch,
-  limit = 25,
-) {
+async function fetchFilesFromTree(accessToken, owner, repo, branch, limit = 25, linesPerFile = 200) {
   const treeData = await getRepoTree(accessToken, owner, repo, branch);
   const filePaths = getImportantFiles(treeData.tree).slice(0, limit);
   const results = [];
+
   for (const filePath of filePaths) {
     try {
-      const fileData = await getFileContent(
-        accessToken,
-        owner,
-        repo,
-        filePath,
-        branch,
-      );
+      const fileData = await getFileContent(accessToken, owner, repo, filePath, branch);
       if (fileData) {
         results.push({
           path: filePath,
-          content: truncateContent(fileData.content, 200),
+          content: truncateContent(fileData.content, linesPerFile),
           language: getFileLanguage(filePath),
         });
       }
     } catch (err) {
-      console.warn(
-        `[AI Handler] Could not fetch file ${filePath}: ${err.message}`,
-      );
+      console.warn(`[AI Handler] Could not fetch file ${filePath}: ${err.message}`);
     }
   }
   return results;
 }
 
-/**
- * Fetch content of changed/added files from a commit
- * @param {string} accessToken
- * @param {string} owner
- * @param {string} repo
- * @param {string} branch
- * @param {Array} commitFiles - files array from commit data
- * @param {number} limit - max files to fetch
- * @param {number} maxLines - line limit per file
- * @param {Set} excludePaths - paths to skip (already fetched)
- * @returns {Promise<Array>}
- */
+// excludePaths avoids fetching files already loaded in the full scan
 async function fetchChangedFiles(
-  accessToken,
-  owner,
-  repo,
-  branch,
-  commitFiles,
-  limit,
-  maxLines,
-  excludePaths = new Set(),
+  accessToken, owner, repo, branch,
+  commitFiles, limit, maxLines, excludePaths = new Set(),
 ) {
   const relevant = commitFiles
     .filter(
@@ -533,16 +326,11 @@ async function fetchChangedFiles(
         !excludePaths.has(f.filename),
     )
     .slice(0, limit);
+
   const results = [];
   for (const file of relevant) {
     try {
-      const fileData = await getFileContent(
-        accessToken,
-        owner,
-        repo,
-        file.filename,
-        branch,
-      );
+      const fileData = await getFileContent(accessToken, owner, repo, file.filename, branch);
       if (fileData) {
         results.push({
           path: file.filename,
@@ -552,57 +340,30 @@ async function fetchChangedFiles(
         });
       }
     } catch (err) {
-      console.warn(
-        `[AI Handler] Could not fetch changed file ${file.filename}: ${err.message}`,
-      );
+      console.warn(`[AI Handler] Could not fetch changed file ${file.filename}: ${err.message}`);
     }
   }
   return results;
 }
 
-/**
- * Get important files from repository tree
- * @param {Array} tree - Repository tree
- * @returns {Array} Array of important file paths
- */
 function getImportantFiles(tree) {
-  const importantFiles = [];
-
-  // Priority order for file types
   const priorities = {
-    // Package/config files (highest priority)
-    "package.json": 1,
-    "package-lock.json": 1,
-    "requirements.txt": 1,
-    "setup.py": 1,
-    "Cargo.toml": 1,
-    "go.mod": 1,
-    "pom.xml": 1,
-    "build.gradle": 1,
-    "composer.json": 1,
+    // dependency/config files — tell us the most about the project
+    "package.json": 1, "package-lock.json": 1, "requirements.txt": 1,
+    "setup.py": 1, "Cargo.toml": 1, "go.mod": 1,
+    "pom.xml": 1, "build.gradle": 1, "composer.json": 1,
 
-    // Main entry points
-    "index.js": 2,
-    "index.ts": 2,
-    "main.js": 2,
-    "main.ts": 2,
-    "main.py": 2,
-    "app.js": 2,
-    "app.ts": 2,
-    "server.js": 2,
-    "server.ts": 2,
+    // entry points
+    "index.js": 2, "index.ts": 2, "main.js": 2, "main.ts": 2,
+    "main.py": 2, "app.js": 2, "app.ts": 2, "server.js": 2, "server.ts": 2,
 
-    // Config files
-    ".env.example": 3,
-    "config.js": 3,
-    "config.json": 3,
+    // runtime config
+    ".env.example": 3, "config.js": 3, "config.json": 3,
 
-    // Documentation
-    "CHANGELOG.md": 4,
-    "CONTRIBUTING.md": 4,
+    // docs
+    "CHANGELOG.md": 4, "CONTRIBUTING.md": 4,
   };
 
-  // Patterns for important directories
   const importantDirPatterns = [
     /^src\/.*\.(js|ts|jsx|tsx|py|java|go|rs)$/,
     /^lib\/.*\.(js|ts|jsx|tsx|py|java|go|rs)$/,
@@ -617,33 +378,17 @@ function getImportantFiles(tree) {
     /^pages\/.*\.(js|ts|jsx|tsx)$/,
   ];
 
-  // Categorize files
   const categorized = tree
     .filter((item) => item.type === "blob")
     .map((item) => {
       const filename = item.path.split("/").pop();
       const priority = priorities[filename] || 999;
-
-      // Check if it matches important directory patterns
-      const matchesPattern = importantDirPatterns.some((pattern) =>
-        pattern.test(item.path),
-      );
-
-      return {
-        path: item.path,
-        priority,
-        matchesPattern,
-      };
+      const matchesPattern = importantDirPatterns.some((pattern) => pattern.test(item.path));
+      return { path: item.path, priority, matchesPattern };
     })
-    .filter((item) => {
-      // Include if it has a priority or matches a pattern
-      return item.priority < 999 || item.matchesPattern;
-    })
+    .filter((item) => item.priority < 999 || item.matchesPattern)
     .sort((a, b) => {
-      // Sort by priority first, then by pattern match
-      if (a.priority !== b.priority) {
-        return a.priority - b.priority;
-      }
+      if (a.priority !== b.priority) return a.priority - b.priority;
       if (a.matchesPattern && !b.matchesPattern) return -1;
       if (!a.matchesPattern && b.matchesPattern) return 1;
       return 0;

@@ -75,7 +75,7 @@ const Logs = () => {
 
     return (
       <div
-        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all ${s.bg} ${s.border} ${s.color} ${s.glow}`}
+        className={`flex items-center justify-center gap-2 w-[130px] py-1.5 rounded-full border transition-all ${s.bg} ${s.border} ${s.color} ${s.glow}`}
       >
         {s.icon}
         <span className="text-[11px] font-bold tracking-wider uppercase">
@@ -239,12 +239,6 @@ const LogItem = ({ log, index, StatusBadge }) => {
 
         <div className="flex items-center gap-4 self-end sm:self-center">
           <StatusBadge status={log.status} />
-          {commitUrl && (
-            <ChevronRight
-              size={18}
-              className="text-slate-300 group-hover:text-slate-600 transition-all group-hover:translate-x-1"
-            />
-          )}
         </div>
       </div>
     </motion.div>
