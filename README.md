@@ -22,7 +22,7 @@ The AI pipeline uses **Gemini 2.5 Flash** (primary, 1M token context) with autom
 
 ---
 
-## Features
+## ✨ Features
 
 - **Smart README generation** — Analyzes actual code, not just file names. Understands structure, dependencies, and intent.
 - **Incremental patch mode** — On subsequent pushes, only the sections affected by your changes are updated, not the whole README.
@@ -31,19 +31,16 @@ The AI pipeline uses **Gemini 2.5 Flash** (primary, 1M token context) with autom
 - **Async job queue** — BullMQ + Redis handles all generation in the background; webhooks return instantly.
 - **GitHub OAuth** — Secure login, AES-256-GCM encrypted token storage, HMAC-SHA256 webhook verification.
 - **Activity logs** — Dashboard shows every job: repo, timestamp, success/failed/in-progress status.
+## ⚙️ How It Works
 
----
 
-## How It Works
-
-```
 1. Connect GitHub Account  →  OAuth login, encrypted token stored
 2. Activate a Repo         →  Webhook created, initial README generated
 3. Push Code               →  Webhook fires, job queued in Redis
 4. AI Scans Codebase       →  Step 1: file selection (mini model)
                                Step 2: README generation (main model)
 5. README Committed        →  Pushed back to your repo automatically
-```
+
 
 ### Full vs Patch Mode
 
@@ -52,14 +49,11 @@ The AI pipeline uses **Gemini 2.5 Flash** (primary, 1M token context) with autom
 
 ### AI Provider Chain
 
-```
+
 Gemini key 1 → Gemini key 2 → Gemini key 3 → Groq key 1 → Groq key 2 → Groq key 3
-```
+
 
 Retriable errors (429 rate limit, 503 overload, network errors) move to the next key. Auth failures (401/403) and payload errors (413) also fall through.
-
----
-
 ## Tech Stack
 
 ### Frontend (`/client`)
@@ -299,17 +293,17 @@ All protected routes require `Authorization: Bearer <jwt_token>`.
 
 ---
 
-## Deployment
+## 🚀 Deployment
 
 ### Backend (Render)
 
 1. New Web Service → connect repo
 2. Settings:
-   ```
+   
    Root Directory: server
    Build Command:  npm install
    Start Command:  npm start
-   ```
+   
 3. Environment variables — add everything from `server/.env`, updating:
    - `GITHUB_CALLBACK_URL` → `https://your-app.onrender.com/auth/github/callback`
    - `FRONTEND_URL` → your Vercel URL
@@ -322,19 +316,16 @@ Required vars:
 
 1. New Project → import repo
 2. Settings:
-   ```
+   
    Root Directory:  client
    Build Command:   npm run build
    Output Directory: dist
-   ```
+   
 3. Environment variable: `VITE_BACKEND_URL` = your Render URL
 
 ### Keepalive (Render free tier)
 
 Set up an uptime monitor at [UptimeRobot](https://uptimerobot.com) or [cron-job.org](https://cron-job.org) pinging `https://your-app.onrender.com/health` every 5 minutes.
-
----
-
 ## Troubleshooting
 
 **README not updating after push**
