@@ -79,5 +79,9 @@ export function validatePatches({
     }
   }
 
-  return { decision: "commit", reason: "All validation checks passed", details: null };
+  return {
+    decision: "commit",
+    reason: "All validation checks passed",
+    details: null,
+  };
 }

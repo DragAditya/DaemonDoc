@@ -1,13 +1,25 @@
 import axios from "axios";
 import { getLanguageFromExtension } from "../utils/langMap.js";
-import { parseReadmeSections, hashSections, mergePatchedSections } from "../utils/readme.parser.js";
-import { validatePatches, FORBIDDEN_SECTIONS } from "../utils/readme.validator.js";
+import {
+  parseReadmeSections,
+  hashSections,
+  mergePatchedSections,
+} from "../utils/readme.parser.js";
+import {
+  validatePatches,
+  FORBIDDEN_SECTIONS,
+} from "../utils/readme.validator.js";
 import {
   buildImpactMappingPrompt,
   buildPatchSystemPrompt,
   buildPatchUserPrompt,
 } from "../utils/prompt.builder.js";
-import { callGeminiAPI, GEMINI_MODEL, GEMINI_MODEL_MINI, PROVIDER_LIMITS } from "./gemini.service.js";
+import {
+  callGeminiAPI,
+  GEMINI_MODEL,
+  GEMINI_MODEL_MINI,
+  PROVIDER_LIMITS,
+} from "./gemini.service.js";
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
@@ -30,7 +42,12 @@ async function callLLMAPI({
   timeout = 60000,
 }) {
   if (provider === "gemini") {
-    return callGeminiAPI(messages, { model, maxTokens, temperature }, apiKey, timeout);
+    return callGeminiAPI(
+      messages,
+      { model, maxTokens, temperature },
+      apiKey,
+      timeout,
+    );
   }
 
   const response = await axios.post(
@@ -100,7 +117,14 @@ function buildProviderList() {
 // blow the context budget on irrelevant files in step 2.
 async function getFileRecommendations(context, apiKey, provider, modelMini) {
   const { maxInputTokens } = PROVIDER_LIMITS[provider];
-  const { repoName, repoOwner, repoStructure, fullCodebase, changedFiles, existingReadme } = context;
+  const {
+    repoName,
+    repoOwner,
+    repoStructure,
+    fullCodebase,
+    changedFiles,
+    existingReadme,
+  } = context;
 
   const fileMetadata = [];
 
@@ -126,7 +150,10 @@ async function getFileRecommendations(context, apiKey, provider, modelMini) {
     });
   }
 
-  const totalEstimatedTokens = fileMetadata.reduce((sum, f) => sum + f.estimatedTokens, 0);
+  const totalEstimatedTokens = fileMetadata.reduce(
+    (sum, f) => sum + f.estimatedTokens,
+    0,
+  );
   const hasExistingReadme = !!existingReadme;
   const existingReadmeTokens = estimateTokens(existingReadme);
 
@@ -182,20 +209,31 @@ Respond with ONLY a JSON object (no markdown, no explanation):
     const cleanContent = content.replace(/```(?:json)?\n?/g, "").trim();
     return JSON.parse(cleanContent);
   } catch (parseError) {
-    console.error("Failed to parse AI recommendation:", content, parseError.message);
+    console.error(
+      "Failed to parse AI recommendation:",
+      content,
+      parseError.message,
+    );
 
     // AI returned garbage — fall back to heuristic file ordering
     const sortedFiles = [...fileMetadata].sort((a, b) => {
       const priority = (f) => {
         if (f.path.includes("package.json")) return 0;
-        if (f.path.includes("index.") || f.path.includes("main.") || f.path.includes("app.")) return 1;
+        if (
+          f.path.includes("index.") ||
+          f.path.includes("main.") ||
+          f.path.includes("app.")
+        )
+          return 1;
         if (f.isChanged) return 2;
         return 3;
       };
       return priority(a) - priority(b);
     });
     return {
-      selectedFiles: sortedFiles.slice(0, PROVIDER_LIMITS[provider].maxFilesFullScan).map((f) => f.path),
+      selectedFiles: sortedFiles
+        .slice(0, PROVIDER_LIMITS[provider].maxFilesFullScan)
+        .map((f) => f.path),
       includeExistingReadme: true,
       truncateReadme: existingReadmeTokens > 1000,
       reasoning: "Fallback selection based on file naming conventions",
@@ -207,24 +245,36 @@ export async function generateReadme(context) {
   const providers = buildProviderList();
 
   if (providers.length === 0) {
-    throw new Error("No API keys configured. Set GEMINI_API_KEY1-3 or GROQ_API_KEY1-3.");
+    throw new Error(
+      "No API keys configured. Set GEMINI_API_KEY1-3 or GROQ_API_KEY1-3.",
+    );
   }
 
   let lastError = null;
 
   for (let i = 0; i < providers.length; i++) {
-    const { key, provider, label, keyIndex, keyTotal, modelMain, modelMini } = providers[i];
+    const { key, provider, label, keyIndex, keyTotal, modelMain, modelMini } =
+      providers[i];
 
     try {
       console.log(`[README] Trying ${label} key ${keyIndex}/${keyTotal}`);
 
-      console.log(`[README] Step 1: Selecting files via ${label} (${modelMini})...`);
-      const recommendations = await getFileRecommendations(context, key, provider, modelMini);
+      console.log(
+        `[README] Step 1: Selecting files via ${label} (${modelMini})...`,
+      );
+      const recommendations = await getFileRecommendations(
+        context,
+        key,
+        provider,
+        modelMini,
+      );
       console.log(`[README] File selection: ${recommendations.reasoning}`);
 
       const optimizedContext = buildOptimizedContext(context, recommendations);
 
-      console.log(`[README] Step 2: Generating README via ${label} (${modelMain})...`);
+      console.log(
+        `[README] Step 2: Generating README via ${label} (${modelMain})...`,
+      );
       const systemPrompt = buildSystemPrompt();
       const userPrompt = buildUserPrompt(optimizedContext, recommendations);
 
@@ -241,7 +291,9 @@ export async function generateReadme(context) {
         timeout: 60000,
       });
 
-      console.log(`[README] ✓ Generated via ${label} key ${keyIndex}/${keyTotal}`);
+      console.log(
+        `[README] ✓ Generated via ${label} key ${keyIndex}/${keyTotal}`,
+      );
       return content;
     } catch (error) {
       lastError = error;
@@ -253,7 +305,9 @@ export async function generateReadme(context) {
         });
 
         if (isRetriableError(error)) {
-          console.log(`[README] ${label} key ${keyIndex} failed (${error.response.status}) — trying next...`);
+          console.log(
+            `[README] ${label} key ${keyIndex} failed (${error.response.status}) — trying next...`,
+          );
           continue;
         }
 
@@ -261,7 +315,10 @@ export async function generateReadme(context) {
           `${label} API error: ${error.response.status} - ${error.response.data?.error?.message || "Unknown error"}`,
         );
       } else if (error.request) {
-        console.error(`[README] ${label} key ${keyIndex} network error:`, error.message);
+        console.error(
+          `[README] ${label} key ${keyIndex} network error:`,
+          error.message,
+        );
         continue;
       } else {
         console.error("[README] Unexpected error:", error.message);
@@ -285,7 +342,8 @@ export async function generateReadme(context) {
 // Filters context down to only the files the AI selected in step 1.
 // Also handles README truncation to keep prompt size in check.
 function buildOptimizedContext(context, recommendations) {
-  const { selectedFiles, includeExistingReadme, truncateReadme } = recommendations;
+  const { selectedFiles, includeExistingReadme, truncateReadme } =
+    recommendations;
   const { fullCodebase, changedFiles, existingReadme, ...rest } = context;
 
   const selectedSet = new Set(selectedFiles);
@@ -473,15 +531,22 @@ Output ONLY the complete README in Markdown format. No explanations, no preamble
 
 function analyzeReadmeDepth(existingReadme) {
   if (!existingReadme) {
-    return { strategy: "full", reason: "No README exists", needsFullCodebase: true };
+    return {
+      strategy: "full",
+      reason: "No README exists",
+      needsFullCodebase: true,
+    };
   }
 
   const wordCount = existingReadme.split(/\s+/).length;
   const hasCodeBlocks = (existingReadme.match(/```/g) || []).length >= 2;
-  const hasMultipleSections = (existingReadme.match(/^#{1,3}\s/gm) || []).length >= 5;
+  const hasMultipleSections =
+    (existingReadme.match(/^#{1,3}\s/gm) || []).length >= 5;
   const hasInstallation = /install|setup|getting started/i.test(existingReadme);
   const hasUsage = /usage|example|how to use/i.test(existingReadme);
-  const hasArchitecture = /architecture|structure|design|component/i.test(existingReadme);
+  const hasArchitecture = /architecture|structure|design|component/i.test(
+    existingReadme,
+  );
   const hasAPI = /api|endpoint|route/i.test(existingReadme);
 
   const depthScore = [
@@ -495,16 +560,39 @@ function analyzeReadmeDepth(existingReadme) {
   ].filter(Boolean).length;
 
   if (depthScore >= 5) {
-    return { strategy: "incremental", reason: "README is comprehensive", depthScore, needsFullCodebase: false };
+    return {
+      strategy: "incremental",
+      reason: "README is comprehensive",
+      depthScore,
+      needsFullCodebase: false,
+    };
   } else if (depthScore >= 3) {
-    return { strategy: "enhance", reason: "README exists but needs more depth", depthScore, needsFullCodebase: true };
+    return {
+      strategy: "enhance",
+      reason: "README exists but needs more depth",
+      depthScore,
+      needsFullCodebase: true,
+    };
   } else {
-    return { strategy: "full", reason: "README is minimal and needs complete rewrite", depthScore, needsFullCodebase: true };
+    return {
+      strategy: "full",
+      reason: "README is minimal and needs complete rewrite",
+      depthScore,
+      needsFullCodebase: true,
+    };
   }
 }
 
 function buildUserPrompt(context, recommendations = {}) {
-  const { repoName, repoOwner, repoStructure, existingReadme, commitDiff, changedFiles, fullCodebase } = context;
+  const {
+    repoName,
+    repoOwner,
+    repoStructure,
+    existingReadme,
+    commitDiff,
+    changedFiles,
+    fullCodebase,
+  } = context;
   const analysis = analyzeReadmeDepth(existingReadme);
 
   let prompt = "";
@@ -573,10 +661,15 @@ export function determineGenerationMode(existingReadme) {
   if (!existingReadme || existingReadme.trim().length < 500) {
     return {
       mode: "full",
-      reason: existingReadme ? "README is too short for patch mode (< 500 chars)" : "No README exists",
+      reason: existingReadme
+        ? "README is too short for patch mode (< 500 chars)"
+        : "No README exists",
     };
   }
-  return { mode: "patch", reason: "README is substantial enough for surgical patching" };
+  return {
+    mode: "patch",
+    reason: "README is substantial enough for surgical patching",
+  };
 }
 
 // Patch step 1 — lightweight model identifies which sections need updating.
@@ -587,7 +680,13 @@ async function mapSectionImpact(
   provider,
   modelMini,
 ) {
-  const prompt = buildImpactMappingPrompt({ repoName, repoOwner, commitDiff, changedFiles, sectionNames });
+  const prompt = buildImpactMappingPrompt({
+    repoName,
+    repoOwner,
+    commitDiff,
+    changedFiles,
+    sectionNames,
+  });
 
   const content = await callLLMAPI({
     messages: [{ role: "user", content: prompt }],
@@ -605,26 +704,52 @@ async function mapSectionImpact(
     const clean = content.replace(/```(?:json)?\n?/g, "").trim();
     const parsed = JSON.parse(clean);
     return {
-      affectedSections: Array.isArray(parsed.affectedSections) ? parsed.affectedSections : [],
+      affectedSections: Array.isArray(parsed.affectedSections)
+        ? parsed.affectedSections
+        : [],
       reasoning: parsed.reasoning || "",
     };
   } catch {
     // Parsing failed — safest fallback is to treat all non-protected sections as affected
-    const nonForbidden = sectionNames.filter((n) => !FORBIDDEN_SECTIONS.includes(n));
-    return { affectedSections: nonForbidden, reasoning: "Fallback: failed to parse impact-mapping response" };
+    const nonForbidden = sectionNames.filter(
+      (n) => !FORBIDDEN_SECTIONS.includes(n),
+    );
+    return {
+      affectedSections: nonForbidden,
+      reasoning: "Fallback: failed to parse impact-mapping response",
+    };
   }
 }
 
 // Patch step 2 — main model rewrites only the affected sections.
 // Returns a JSON map of { sectionName: newMarkdown }.
 async function generateSectionPatches(
-  { repoName, repoOwner, repoStructure, commitDiff, changedFiles, editableSections, uneditableSectionNames, strictMode },
+  {
+    repoName,
+    repoOwner,
+    repoStructure,
+    commitDiff,
+    changedFiles,
+    editableSections,
+    uneditableSectionNames,
+    strictMode,
+  },
   apiKey,
   provider,
   modelMain,
 ) {
-  const systemPrompt = buildPatchSystemPrompt(uneditableSectionNames, strictMode);
-  const userPrompt = buildPatchUserPrompt({ repoName, repoOwner, repoStructure, commitDiff, changedFiles, editableSections });
+  const systemPrompt = buildPatchSystemPrompt(
+    uneditableSectionNames,
+    strictMode,
+  );
+  const userPrompt = buildPatchUserPrompt({
+    repoName,
+    repoOwner,
+    repoStructure,
+    commitDiff,
+    changedFiles,
+    editableSections,
+  });
 
   const content = await callLLMAPI({
     messages: [
@@ -659,27 +784,45 @@ export async function generateReadmePatch({
   const providers = buildProviderList();
 
   if (providers.length === 0) {
-    console.error("[Patch] No API keys configured (GEMINI_API_KEY or GROQ_API_KEY)");
+    console.error(
+      "[Patch] No API keys configured (GEMINI_API_KEY or GROQ_API_KEY)",
+    );
     return null;
   }
 
   // Strip file content for step 1 — the mini model only needs paths and statuses
-  const changedFilesMeta = changedFiles.map((f) => ({ path: f.path, status: f.status || "modified" }));
+  const changedFilesMeta = changedFiles.map((f) => ({
+    path: f.path,
+    status: f.status || "modified",
+  }));
 
   for (let i = 0; i < providers.length; i++) {
-    const { key, provider, label, keyIndex, keyTotal, modelMain, modelMini } = providers[i];
+    const { key, provider, label, keyIndex, keyTotal, modelMain, modelMini } =
+      providers[i];
     try {
       console.log(`[Patch] Trying ${label} key ${keyIndex}/${keyTotal}`);
 
       const { affectedSections, reasoning } = await mapSectionImpact(
-        { repoName, repoOwner, commitDiff, changedFiles: changedFilesMeta, sectionNames: orderedKeys },
-        key, provider, modelMini,
+        {
+          repoName,
+          repoOwner,
+          commitDiff,
+          changedFiles: changedFilesMeta,
+          sectionNames: orderedKeys,
+        },
+        key,
+        provider,
+        modelMini,
       );
       console.log(`[Patch] Impact mapping: ${reasoning}`);
       console.log(`[Patch] Affected sections: ${affectedSections.join(", ")}`);
 
       const editableKeys = affectedSections
-        .filter((k) => !FORBIDDEN_SECTIONS.includes(k) && originalSections[k] !== undefined)
+        .filter(
+          (k) =>
+            !FORBIDDEN_SECTIONS.includes(k) &&
+            originalSections[k] !== undefined,
+        )
         .slice(0, PROVIDER_LIMITS[provider].maxPatchSections);
 
       if (editableKeys.length === 0) {
@@ -689,34 +832,78 @@ export async function generateReadmePatch({
 
       const editableSections = {};
       for (const k of editableKeys) editableSections[k] = originalSections[k];
-      const uneditableSectionNames = orderedKeys.filter((k) => !editableKeys.includes(k));
-
-      let patches = await generateSectionPatches(
-        { repoName, repoOwner, repoStructure, commitDiff, changedFiles, editableSections, uneditableSectionNames, strictMode: false },
-        key, provider, modelMain,
+      const uneditableSectionNames = orderedKeys.filter(
+        (k) => !editableKeys.includes(k),
       );
 
-      let validation = validatePatches({ originalSections, originalHashes, patches, affectedKeys: editableKeys });
+      let patches = await generateSectionPatches(
+        {
+          repoName,
+          repoOwner,
+          repoStructure,
+          commitDiff,
+          changedFiles,
+          editableSections,
+          uneditableSectionNames,
+          strictMode: false,
+        },
+        key,
+        provider,
+        modelMain,
+      );
+
+      let validation = validatePatches({
+        originalSections,
+        originalHashes,
+        patches,
+        affectedKeys: editableKeys,
+      });
 
       if (validation.decision === "retry") {
-        console.log(`[Patch] Validation failed (${validation.reason}), retrying with strictMode`);
-        patches = await generateSectionPatches(
-          { repoName, repoOwner, repoStructure, commitDiff, changedFiles, editableSections, uneditableSectionNames, strictMode: true },
-          key, provider, modelMain,
+        console.log(
+          `[Patch] Validation failed (${validation.reason}), retrying with strictMode`,
         );
-        validation = validatePatches({ originalSections, originalHashes, patches, affectedKeys: editableKeys });
+        patches = await generateSectionPatches(
+          {
+            repoName,
+            repoOwner,
+            repoStructure,
+            commitDiff,
+            changedFiles,
+            editableSections,
+            uneditableSectionNames,
+            strictMode: true,
+          },
+          key,
+          provider,
+          modelMain,
+        );
+        validation = validatePatches({
+          originalSections,
+          originalHashes,
+          patches,
+          affectedKeys: editableKeys,
+        });
       }
 
       if (validation.decision !== "commit") {
-        console.log(`[Patch] Validation failed after strictMode retry (${validation.reason}) — returning null`);
+        console.log(
+          `[Patch] Validation failed after strictMode retry (${validation.reason}) — returning null`,
+        );
         return null;
       }
 
-      const finalReadme = mergePatchedSections(originalSections, orderedKeys, patches);
+      const finalReadme = mergePatchedSections(
+        originalSections,
+        orderedKeys,
+        patches,
+      );
       const mergedSections = { ...originalSections, ...patches };
       const newHashes = hashSections(mergedSections);
 
-      console.log(`[Patch] ✓ Patched [${editableKeys.join(", ")}] via ${label} key ${keyIndex}/${keyTotal}`);
+      console.log(
+        `[Patch] ✓ Patched [${editableKeys.join(", ")}] via ${label} key ${keyIndex}/${keyTotal}`,
+      );
       return { finalReadme, newHashes };
     } catch (error) {
       if (error.response) {
@@ -725,11 +912,16 @@ export async function generateReadmePatch({
           message: error.response.data?.error?.message,
         });
         if (isRetriableError(error)) {
-          console.log(`[Patch] ${label} key ${keyIndex} failed (${error.response.status}) — trying next...`);
+          console.log(
+            `[Patch] ${label} key ${keyIndex} failed (${error.response.status}) — trying next...`,
+          );
           continue;
         }
       } else if (error.request) {
-        console.error(`[Patch] ${label} key ${keyIndex} network error:`, error.message);
+        console.error(
+          `[Patch] ${label} key ${keyIndex} network error:`,
+          error.message,
+        );
         continue;
       }
       console.error(`[Patch] Non-retriable error:`, error.message);

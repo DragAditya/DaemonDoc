@@ -45,8 +45,7 @@ const AuthNavigation = () => {
           className="flex items-center gap-2 sm:gap-3 cursor-pointer group w-40 sm:w-60 overflow-hidden"
           onClick={() => navigate("/")}
         >
-          <motion.div
-          >
+          <motion.div>
             <img
               src="/DaemonLogo.png"
               alt="DaemonDoc Logo"

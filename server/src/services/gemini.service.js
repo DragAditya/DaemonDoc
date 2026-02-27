@@ -1,9 +1,11 @@
 import axios from "axios";
 
-const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+const GEMINI_API_BASE =
+  "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-export const GEMINI_MODEL_MINI = process.env.GEMINI_MODEL_MINI || "gemini-1.5-flash";
+export const GEMINI_MODEL_MINI =
+  process.env.GEMINI_MODEL_MINI || "gemini-1.5-flash";
 
 // Gemini has a 1M token context window, so we can afford much larger scans
 // than Groq's practical ~6K limit. These limits scale every fetch accordingly.

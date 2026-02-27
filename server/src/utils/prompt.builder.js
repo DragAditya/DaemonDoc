@@ -112,7 +112,6 @@ export function optimizeContext(context, maxTokens = 8000) {
   const optimized = { ...context };
   const fits = () => estimateContextSize(optimized) <= maxChars;
 
-
   if (optimized.fullCodebase && optimized.fullCodebase.length > 0) {
     optimized.fullCodebase = optimized.fullCodebase.map((file) => ({
       ...file,
@@ -261,7 +260,6 @@ export function createMinimalContext(repoName, repoOwner) {
   };
 }
 
-
 /**
  * Build the user prompt for LLaMA 70B impact-mapping (Step 1 of patch mode).
  * Passes only file metadata and section names — no file content.
@@ -317,7 +315,10 @@ Respond with ONLY a JSON object (no markdown fences, no explanation):
  * @param {boolean}  strictMode             - If true, adds minimum-change instruction
  * @returns {string}
  */
-export function buildPatchSystemPrompt(uneditableSectionNames, strictMode = false) {
+export function buildPatchSystemPrompt(
+  uneditableSectionNames,
+  strictMode = false,
+) {
   const uneditableList =
     uneditableSectionNames.length > 0
       ? uneditableSectionNames.join(", ")

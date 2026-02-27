@@ -6,7 +6,6 @@ const NAV_LINKS = [
   { label: "Solutions", href: "#features" },
   { label: "Pricing", href: "#pricing" },
   { label: "Product", href: "#engine" },
-
 ];
 
 const LandingNavigation = () => {
@@ -19,9 +18,11 @@ const LandingNavigation = () => {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 justify-center">
-            
-              <img src="/DaemonLogo.png" alt="DaemonDoc" className="w-45 md:w-60 self-center pt-2 mr-55 md:mr-0" />
-  
+            <img
+              src="/DaemonLogo.png"
+              alt="DaemonDoc"
+              className="w-45 md:w-60 self-center pt-2 mr-55 md:mr-0"
+            />
           </a>
 
           {/* Desktop nav links */}

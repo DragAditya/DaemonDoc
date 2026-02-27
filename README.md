@@ -1,4 +1,3 @@
-
 # 📚 DaemonDoc - AI-Powered README Generator
 
 <div align="center">
@@ -10,10 +9,11 @@
 **Transform your GitHub repositories with AI-generated, always up-to-date documentation**
 
 [Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Tech Stack](#-tech-stack) • [API Docs](#-api-documentation) • [Deployment](#-deployment)
+
 </div>
 
-
 ---
+
 ## 🎯 Overview
 
 **DaemonDoc** is an intelligent README generation platform that leverages AI to automatically create and maintain comprehensive documentation for your GitHub repositories. By analyzing your codebase structure, dependencies, and commits, DaemonDoc generates professional, contextual READMEs that stay synchronized with your code through GitHub webhooks.
@@ -52,6 +52,7 @@
 - BullMQ + Redis powered background processing for high‑performance, scalable operations
 - Dashboard for per‑repository activation, de‑activation, and management
 - Secure OAuth 2.0 login, JWT‑based sessions, and HMAC‑SHA256 webhook verification
+
 ## 🎬 Demo
 
 ### Live Application
@@ -87,40 +88,39 @@ _(Add screenshots of your landing page, dashboard, and repository selection UI h
 
 ## 🏗️ Architecture
 
-
                         ┌──────────────────┐
                         │   React Client   │
                         │   (Vite + TW)    │
                         └────────┬─────────┘
                                  │ REST API
                                  ↓
-┌────────────────────────────────────────────────────────────────┐
-│                      Express Backend                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐   │
-│  │   Auth       │  │   GitHub     │  │   Worker          │   │
-│  │  Controller  │  │  Controller  │  │   Controller      │   │
-│  └──────────────┘  └──────────────┘  └───────────────────┘   │
-└────────┬──────────────────┬──────────────────┬────────────────┘
-         │                  │                  │
-         ↓                  ↓                  ↓
-  ┌────────────┐   ┌─────────────────┐  ┌──────────────┐
-  │  MongoDB   │   │  GitHub API     │  │   Redis      │
-  │   (User    │   │  (Repos, Trees, │  │  (BullMQ)    │
-  │   Repos)   │   │   Webhooks)     │  │              │
-  └────────────┘   └─────────────────┘  └──────┬───────┘
-                                                │
-                                                ↓
-                                      ┌──────────────────┐
-                                      │  Background      │
-                                      │  Worker Process  │
-                                      └────────┬─────────┘
-                                               │
-                                               ↓
-                                      ┌──────────────────┐
-                                      │   Groq AI API    │
-                                      │  (LLaMA 3.3 70B) │
-                                      └──────────────────┘
 
+┌────────────────────────────────────────────────────────────────┐
+│ Express Backend │
+│ ┌──────────────┐ ┌──────────────┐ ┌───────────────────┐ │
+│ │ Auth │ │ GitHub │ │ Worker │ │
+│ │ Controller │ │ Controller │ │ Controller │ │
+│ └──────────────┘ └──────────────┘ └───────────────────┘ │
+└────────┬──────────────────┬──────────────────┬────────────────┘
+│ │ │
+↓ ↓ ↓
+┌────────────┐ ┌─────────────────┐ ┌──────────────┐
+│ MongoDB │ │ GitHub API │ │ Redis │
+│ (User │ │ (Repos, Trees, │ │ (BullMQ) │
+│ Repos) │ │ Webhooks) │ │ │
+└────────────┘ └─────────────────┘ └──────┬───────┘
+│
+↓
+┌──────────────────┐
+│ Background │
+│ Worker Process │
+└────────┬─────────┘
+│
+↓
+┌──────────────────┐
+│ Groq AI API │
+│ (LLaMA 3.3 70B) │
+└──────────────────┘
 
 ### Data Flow
 
@@ -137,6 +137,7 @@ _(Add screenshots of your landing page, dashboard, and repository selection UI h
 ### UI Updates
 
 Recent UI refinements include:
+
 - Adjusted navigation bar padding for improved responsiveness on mobile and desktop.
 - Reduced top padding in the hero section to create a tighter, more engaging first‑view experience.
 
@@ -643,7 +644,6 @@ Health check endpoint for monitoring.
 ### Backend Deployment (Render)
 
 1. **Create Web Service**
-
    - Go to [Render Dashboard](https://dashboard.render.com/)
    - Click **New +** → **Web Service**
    - Connect your GitHub repository
@@ -662,7 +662,6 @@ Health check endpoint for monitoring.
 
 3. **Environment Variables**
    Add all variables from your `server/.env`:
-
    - `MONGO_URI`
    - `JWT_SECRET`
    - `GITHUB_CLIENT_ID`
@@ -687,7 +686,6 @@ Health check endpoint for monitoring.
 ### Frontend Deployment (Vercel)
 
 1. **Import Project**
-
    - Go to [Vercel Dashboard](https://vercel.com/dashboard)
    - Click **Add New** → **Project**
    - Import your GitHub repository
@@ -704,7 +702,6 @@ Health check endpoint for monitoring.
 
 3. **Environment Variables**
    Add environment variable:
-
    - `VITE_BACKEND_URL` = Your Render backend URL
 
 4. **Deploy**
@@ -715,13 +712,11 @@ Health check endpoint for monitoring.
 ### Post-Deployment Steps
 
 1. **Update GitHub OAuth App**
-
    - Go to GitHub OAuth App settings
    - Update **Homepage URL** to your Vercel URL
    - Update **Callback URL** to `https://your-render-app.onrender.com/auth/github/callback`
 
 2. **Update Environment Variables**
-
    - Update `GITHUB_CALLBACK_URL` in Render
    - Update `FRONTEND_URL` in Render
    - Update `BACKEND_URL` in Render and Vercel
@@ -764,25 +759,21 @@ Health check endpoint for monitoring.
 ### Implemented Security Measures
 
 1. **Authentication**
-
    - OAuth 2.0 with GitHub
    - JWT tokens with 7-day expiration
    - Secure token storage in localStorage
 
 2. **Encryption**
-
    - AES-256-GCM encryption for GitHub access tokens
    - Random IV generation for each encryption
    - Authentication tags for data integrity
 
 3. **Webhook Security**
-
    - HMAC-SHA256 signature verification
    - Timing-safe equal comparison
    - Secret key validation
 
 4. **Database Security**
-
    - Mongoose schema validation
    - MongoDB connection with authentication
    - Encrypted sensitive fields
@@ -851,13 +842,11 @@ mongosh "your_connection_string"
 **Solutions**:
 
 1. **Check webhook exists**:
-
    - Go to repo → Settings → Webhooks
    - Verify webhook URL matches your backend
    - Check recent deliveries for errors
 
 2. **Verify webhook secret**:
-
    - Ensure `GITHUB_WEBHOOK_SECRET` matches webhook configuration
    - Check server logs for signature verification errors
 
@@ -894,7 +883,6 @@ redis-cli
 **Solutions**:
 
 1. **Verify callback URL**:
-
    - GitHub OAuth App settings must match exactly
    - Include protocol (http:// or https://)
    - No trailing slash
@@ -1028,7 +1016,6 @@ Contributions are welcome! Here's how you can help:
    ```
 
 3. **Make your changes**
-
    - Follow existing code style
    - Add comments for complex logic
    - Update documentation if needed
@@ -1121,7 +1108,6 @@ Special thanks to:
 - [Documentation](https://docs.daemondoc.online)
 - [API Reference](https://api.daemondoc.online/docs)
 - [Changelog](CHANGELOG.md)
-
 
 ---
 
