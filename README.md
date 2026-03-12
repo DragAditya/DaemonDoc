@@ -352,6 +352,7 @@ For cloud Redis, verify the IP whitelist includes your server's IP.
 ## Security
 
 - **GitHub tokens** encrypted at rest with AES-256-GCM (random IV per entry)
+- **GitHub tokens** excluded from API responses
 - **Webhooks** verified with HMAC-SHA256 using timing-safe comparison
 - **JWT** sessions with 7-day expiration
 - **Never commit `.env`** — it's in `.gitignore`
