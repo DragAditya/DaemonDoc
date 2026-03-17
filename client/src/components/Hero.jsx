@@ -214,7 +214,7 @@ const Hero = () => {
               </div>
               <div className="flex-1 bg-white rounded-md py-1 pr-20 text-xs text-slate-400 flex items-center justify-center gap-1 font-mono">
                 <Lock size={10} className="shrink-0" />
-                daemondoc.online
+                https://daemon-doc.vercel.app/
               </div>
             </div>
 
