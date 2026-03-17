@@ -368,8 +368,8 @@ ISC — see [LICENSE](LICENSE)
 
 <div align="center">
 
-**Built by [Arman Thakur](https://www.armandev.space) & [Yash Bavadiya](https://xevrion.dev/)**
+**Built by [Team](https://DragAditya)**
 
-[daemondoc.online](https://daemondoc.online)
+[daemon-doc.vercel.app](https://daemon-doc.vercel.app/)
 
 </div>
