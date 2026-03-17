@@ -3,8 +3,8 @@
 
 <div align="center">
 
-[![Live](https://img.shields.io/badge/www.daemondoc.online-4F46E5?style=for-the-badge)](github.com/dragaditya)
-[![License](https://img.shields.io/badge/License-ISC-blue.svg?style=for-the-badge)](LICENSE)
+[![Live](https://img.shields.io/badge/DragAdi-4F46E5?style=for-the-badge)](github.com/dragaditya)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 **Connect a repo. Push code. Get a professional README — automatically.**
 
