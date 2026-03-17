@@ -51,8 +51,8 @@ const Home = () => {
       <SEO
         title="Dashboard - DaemonDoc | Manage Your Repositories"
         description="Manage AI-powered README updates for your GitHub repositories. View, enable, and configure automatic documentation generation."
-        ogUrl="https://daemondoc.online/home"
-        canonical="https://daemondoc.online/home"
+        ogUrl="https://daemon-doc.vercel.app/"
+        canonical="https://daemon-doc.vercel.app/"
       />
       <div className="min-h-screen bg-linear-to-br from-slate-50 to-white text-slate-900 font-sans selection:bg-indigo-100 overflow-x-hidden">
         <AuthNavigation />
