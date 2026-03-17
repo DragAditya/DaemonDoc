@@ -19,8 +19,8 @@ const LandingPage = () => {
         title="DaemonDoc - AI-Powered README Generator for GitHub | Automate Your Documentation"
         description="Stop wasting hours on documentation. DaemonDoc automatically generates and updates your GitHub README files using AI. Connect your repos and keep documentation fresh as your code evolves."
         keywords="README generator, AI documentation, GitHub automation, automatic README, documentation tool, code documentation, GitHub README, AI README generator, developer tools"
-        ogUrl="https://daemondoc.online/"
-        canonical="https://daemondoc.online/"
+        ogUrl="https://daemon-doc.vercel.app//"
+        canonical="https://daemon-doc.vercel.app/"
       />
       <div className="min-h-screen bg-white text-slate-900 selection:bg-indigo-100 overflow-x-hidden antialiased">
         <LandingNavigation />
