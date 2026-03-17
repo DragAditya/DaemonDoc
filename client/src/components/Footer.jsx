@@ -76,14 +76,14 @@ const Footer = () => {
         <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-8">
             <span className="text-slate-500 text-sm">
-              © {currentYear} DaemonDoc Inc.
+              © {currentYear} DragAdi Inc.
             </span>
           </div>
 
           <div className="flex items-center gap-6">
             {/* X (Twitter) */}
             <a
-              href="#"
+              href="https://github.com/dragaditya"
               className="text-slate-400 hover:text-slate-900 transition-colors"
               aria-label="X (Twitter)"
             >
@@ -93,7 +93,7 @@ const Footer = () => {
             </a>
             {/* GitHub */}
             <a
-              href="https://github.com/kaihere14/daemondoc"
+              href="https://github.com/dragaditya"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-400 hover:text-slate-900 transition-colors"
